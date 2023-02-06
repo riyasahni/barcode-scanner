@@ -4,17 +4,16 @@ module HipBarcodes where
 -- qualified imports to avoid collisions between common names. For
 -- example, Prelude and Data.Map and Graphics.Image all define `map`.
 
-import           Code128
-import           Data.Char
-import           Data.Map (Map, (!))
-import qualified Data.Map as Map
-import           Graphics.Image (Image, Pixel(..), RGB, VU(VU))
-import           Graphics.Image.ColorSpace
-import           Graphics.Image.Interface (MArray)
-import qualified Graphics.Image as Image
-import           System.Environment
-import           System.Exit
-
+import Code128
+import Data.Char
+import Data.Map (Map, (!))
+import Data.Map qualified as Map
+import Graphics.Image (Image, Pixel (..), RGB, VU (VU))
+import Graphics.Image qualified as Image
+import Graphics.Image.ColorSpace
+import Graphics.Image.Interface (MArray)
+import System.Environment
+import System.Exit
 
 --------------------------------------------------------------------------------
 -- NOTE: Defining these at top-level rather than changing Code128.TheCodes
@@ -22,8 +21,7 @@ import           System.Exit
 
 bToC, cToB :: SymbolId
 bToC = 99
-cToB = 100  
-
+cToB = 100
 
 --------------------------------------------------------------------------------
 -- 1. General Decoding
@@ -32,7 +30,6 @@ decode :: TheCodes -> BC -> Either Error String
 decode theCodes (start_, data_, checksum_, stop_) =
   undefined
 
-
 --------------------------------------------------------------------------------
 -- 2. Optimal Encodings
 
@@ -40,9 +37,8 @@ decode theCodes (start_, data_, checksum_, stop_) =
 encode :: TheCodes -> String -> Either Error BC
 encode theCodes str
   | not $ all isPrintable str = Left "encode: unsupported characters"
-  | all isDigit str           = encodeC theCodes str
-  | otherwise                 = encodeB theCodes str
-
+  | all isDigit str = encodeC theCodes str
+  | otherwise = encodeB theCodes str
 
 --------------------------------------------------------------------------------
 -- 3. Making Barcodes
@@ -50,7 +46,6 @@ encode theCodes str
 makeBarcode :: FilePath -> Int -> Int -> BCString -> IO ()
 makeBarcode filePath imageHeight moduleWidth (BCString symbols) =
   undefined
-
 
 --------------------------------------------------------------------------------
 -- 4. Scanning Barcodes
@@ -75,7 +70,6 @@ takeEvery :: Int -> [a] -> [a]
 takeEvery n xs =
   undefined
 
-
 --------------------------------------------------------------------------------
 -- 5. Scanning Designed Barcodes
 
@@ -83,35 +77,39 @@ scanDesignedBarcode :: FilePath -> IO BCString
 scanDesignedBarcode filePath =
   undefined
 
-
 --------------------------------------------------------------------------------
 -- Main
 
-runEncoder
-  :: (TheCodes -> String -> Either Error BC) -> FilePath -> Int -> Int -> String
-  -> IO ()
+runEncoder ::
+  (TheCodes -> String -> Either Error BC) ->
+  FilePath ->
+  Int ->
+  Int ->
+  String ->
+  IO ()
 runEncoder f filePath height moduleWidth str = do
   theCodes <- loadTheCodes
   let result = bcToBCString theCodes <$> f theCodes str
   either (const (die "encoder failed")) printEncoding result
-    where
-      printEncoding bcString = do
-        putStrLn $ "\nPayload:\n" ++ str
-        putStrLn $ "\nEncoding:\n" ++ show bcString
-        makeBarcode filePath height moduleWidth bcString
+  where
+    printEncoding bcString = do
+      putStrLn $ "\nPayload:\n" ++ str
+      putStrLn $ "\nEncoding:\n" ++ show bcString
+      makeBarcode filePath height moduleWidth bcString
 
-runDecoder
-  :: (TheCodes -> BC -> Either Error String) -> String
-  -> IO ()
+runDecoder ::
+  (TheCodes -> BC -> Either Error String) ->
+  String ->
+  IO ()
 runDecoder f filePath = do
   theCodes <- loadTheCodes
   bcString <- scanBarcode filePath
   let bc = bcStringToBC theCodes bcString
   either (const (die "decoder failed")) printDecoding (f theCodes bc)
-    where
-      printDecoding str = do
-        putStrLn $ "\nDecoding:\n" ++ str
-        putStrLn ""
+  where
+    printDecoding str = do
+      putStrLn $ "\nDecoding:\n" ++ str
+      putStrLn ""
 
 main :: IO ()
 main =
@@ -119,10 +117,15 @@ main =
   where
     processArgs ["encode", filePath, imageHeight, moduleWidth, str] =
       HipBarcodes.runEncoder
-        encode filePath (read imageHeight) (read moduleWidth) str
+        encode
+        filePath
+        (read imageHeight)
+        (read moduleWidth)
+        str
     processArgs ["decode", file] =
       HipBarcodes.runDecoder decode file
     processArgs _ =
-      die $ "\nUsage:\n\n"
-        ++ "  cabal run hip-barcodes -- encode imageFilePath imageHeight moduleWidth string\n"
-        ++ "  cabal run hip-barcodes -- decode imageFilePath\n"
+      die $
+        "\nUsage:\n\n"
+          ++ "  cabal run hip-barcodes -- encode imageFilePath imageHeight moduleWidth string\n"
+          ++ "  cabal run hip-barcodes -- decode imageFilePath\n"
