@@ -6,7 +6,7 @@ module HipBarcodes where
 
 import Code128
 import Data.Char
-import Data.Map (Map, (!))
+import Data.Map (Map, lookup, (!))
 import Data.Map qualified as Map
 import Graphics.Image (Image, Pixel (..), RGB, VU (VU))
 import Graphics.Image qualified as Image
@@ -20,15 +20,61 @@ import System.Exit
 -- to include them, like the start and stop symbols.
 
 bToC, cToB :: SymbolId
-bToC = 99
-cToB = 100
+bToC = 99 -- the symbolId for [Code C] in the B code set
+cToB = 100 -- the symbolId for [Code B] in the C code set
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+-- structural idea
+
+-- decode :: CD-> Either Error String
+--    Look at the start code
+--    call decodeB or decodeC as appropriate
+--    look at start code, use helpDecode w/ appropriate CodeSet (B or C)
+
+-----------------------------------------------------------------
+-----------------------------------------------------------------
+
+--  [Start B] ... [Code C] ... [Code B] ... [Stop]
+data CodeSet = B | C
+
+-- helper function to decode symbolId depending on which Codeset it's in
+helpDecode :: TheCodes -> CodeSet -> [SymbolId] -> String
+helpDecode theCodes _ [] = ""
+-- switch to other codeset if we hit a switch. Else, keep decoding in current codeset
+
+-- how can I use "where" to make this cleaner??**
+helpDecode theCodes B (x : xs) =
+  if x == bToC
+    then helpDecode theCodes C xs
+    else case Data.Map.lookup x (bDecodings theCodes) of
+      Just bVal ->
+        case bVal of
+          Left chr -> chr : helpDecode theCodes B xs
+          Right _ -> "INVALID B VAL"
+      Nothing -> "INVALID B VAL"
+helpDecode theCodes C (x : xs) =
+  if x == cToB
+    then helpDecode theCodes B xs
+    else case Data.Map.lookup x (cDecodings theCodes) of
+      Just cVal ->
+        case cVal of
+          Left (ch1, ch2) -> ch1 : ch2 : helpDecode theCodes C xs
+          Right _ -> "INVALID C VAL"
+      Nothing -> "INVALID C VAL"
+
+-- helpDecode C (x:xs) = ...
 
 --------------------------------------------------------------------------------
 -- 1. General Decoding
 
 decode :: TheCodes -> BC -> Either Error String
-decode theCodes (start_, data_, checksum_, stop_) =
-  undefined
+decode theCodes (start_, data_, checksum_, stop_)
+  | start_ /= startB theCodes && start_ /= startC theCodes = Left "invalid start code"
+  | stop_ /= stop theCodes = Left "invalid stop code"
+  | checksum_ /= computeChecksum start_ data_ = Left "invalid checksum"
+  | start_ == startB theCodes = Right (helpDecode theCodes B data_)
+  | start_ == startC theCodes = Right (helpDecode theCodes C data_)
 
 --------------------------------------------------------------------------------
 -- 2. Optimal Encodings
