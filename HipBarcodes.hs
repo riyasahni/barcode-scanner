@@ -101,16 +101,48 @@ makeBarcode filePath imageHeight moduleWidth (BCString symbols) = do
   -- collapse the BCString symbols into list of Bools (aka [Module])
   -- flip the list of bools (because leftToRight will always only concat from the LHS)
   -- parse through list of bools and if False then leftToRight
+  let modules = reverse (concat symbols)
+
   let barcode_image_black = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB (0 :: Double) 0 0)
   let barcode_image_white = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB (255 :: Double) 255 255)
 
   let barcode_image = leftToRight barcode_image_black barcode_image_white
 
+  {-   case modules of
+       [] -> writeImage filePath barcode_image
+       (m:ms) -> if m then leftToRight barcode_image_black makeBarcode filePath imageHeight moduleWidth (BCString )
+
+  -}
+  -- keep track of which index in 'modules' the 'j'th pixel falls into
+  -- i.e., j = 100 where moduleWidth = 50, & length 'modules' = 2
+  let mods = concat symbols
+
+  let barcode_img =
+        makeImageR
+          VU
+          (imageHeight, moduleWidth)
+          ( \(i, j) ->
+              ( if (j > moduleWidth) && (mods !! (moduleWidth `div` fromIntegral j))
+                  then PixelRGB (0 :: Double) 0 0
+                  else PixelRGB (255 :: Double) 255 255
+              )
+          )
+
+  -----------------------------------------------------------------------------------
+  -- another way to do it: (j / moduleWidth = the index it is at in [modules])
+
+  -- cases:
+  -- j <= moduleWidth
+  -- then we're at the first module (index 0) in [Modules] so print black
+  -- j > moduleWidth
+  -- if modules !! (moduleWidth/j) then r,g,b = 0 else r,g,b = 255
+  -----------------------------------------------------------------------------------
+
   -- symbols = [symbol] = [[module]] = [[T,F,F,T], []]
   -- i is always the same color as j
   --
   -- how do you connect the pixel
-  writeImage filePath barcode_image
+  writeImage filePath barcode_img
 
 -- pure ()
 
