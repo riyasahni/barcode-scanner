@@ -95,7 +95,10 @@ makeBarcode filePath imageHeight moduleWidth (BCString symbols) =
   -- let grad_color = makeImageR VU (200, 200) (\(i, j) -> PixelRGB 0 0 0) / 400
   -- writeImage "images/grad_color.png" grad_color
 
-  -- let barcodeImage = makeImageR VU (imageHeight, )
+  -- print a black stripe thats the size of (imageHeight, moduleWidth)
+  -- let barcode_image = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB 0 0 0) / 400
+  -- writeImage "images/barcode_image.png" barcode_image
+  -- pure ()
 
   undefined
 
