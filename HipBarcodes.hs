@@ -8,7 +8,7 @@ import Code128
 import Data.Char
 import Data.Map (Map, lookup, (!))
 import Data.Map qualified as Map
-import Graphics.Image (Image, Pixel (..), RGB, VU (VU))
+import Graphics.Image (Image, Pixel (..), RGB, VU (VU), leftToRight, makeImageR, writeImage)
 import Graphics.Image qualified as Image
 import Graphics.Image.ColorSpace
 import Graphics.Image.Interface (MArray)
@@ -90,17 +90,31 @@ encode theCodes str
 -- 3. Making Barcodes
 
 makeBarcode :: FilePath -> Int -> Int -> BCString -> IO ()
-makeBarcode filePath imageHeight moduleWidth (BCString symbols) =
-  -- This creates a 200x200 black square:
+makeBarcode filePath imageHeight moduleWidth (BCString symbols) = do
+  -- This creates a 200x200 pixel black square:
   -- let grad_color = makeImageR VU (200, 200) (\(i, j) -> PixelRGB 0 0 0) / 400
   -- writeImage "images/grad_color.png" grad_color
 
   -- print a black stripe thats the size of (imageHeight, moduleWidth)
-  -- let barcode_image = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB 0 0 0) / 400
-  -- writeImage "images/barcode_image.png" barcode_image
-  -- pure ()
+  -- let num = imageHeight * moduleWidth
 
-  undefined
+  -- collapse the BCString symbols into list of Bools (aka [Module])
+  -- flip the list of bools (because leftToRight will always only concat from the LHS)
+  -- parse through list of bools and if False then leftToRight
+  let barcode_image_black = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB (0 :: Double) 0 0)
+  let barcode_image_white = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB (255 :: Double) 255 255)
+
+  let barcode_image = leftToRight barcode_image_black barcode_image_white
+
+  -- symbols = [symbol] = [[module]] = [[T,F,F,T], []]
+  -- i is always the same color as j
+  --
+  -- how do you connect the pixel
+  writeImage filePath barcode_image
+
+-- pure ()
+
+-- undefined
 
 --------------------------------------------------------------------------------
 -- 4. Scanning Barcodes
