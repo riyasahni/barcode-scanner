@@ -91,6 +91,12 @@ encode theCodes str
 
 makeBarcode :: FilePath -> Int -> Int -> BCString -> IO ()
 makeBarcode filePath imageHeight moduleWidth (BCString symbols) =
+  -- This creates a 200x200 black square:
+  -- let grad_color = makeImageR VU (200, 200) (\(i, j) -> PixelRGB 0 0 0) / 400
+  -- writeImage "images/grad_color.png" grad_color
+
+  -- let barcodeImage = makeImageR VU (imageHeight, )
+
   undefined
 
 --------------------------------------------------------------------------------
