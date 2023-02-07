@@ -91,62 +91,21 @@ encode theCodes str
 
 makeBarcode :: FilePath -> Int -> Int -> BCString -> IO ()
 makeBarcode filePath imageHeight moduleWidth (BCString symbols) = do
-  -- This creates a 200x200 pixel black square:
-  -- let grad_color = makeImageR VU (200, 200) (\(i, j) -> PixelRGB 0 0 0) / 400
-  -- writeImage "images/grad_color.png" grad_color
-
-  -- print a black stripe thats the size of (imageHeight, moduleWidth)
-  -- let num = imageHeight * moduleWidth
-
-  -- collapse the BCString symbols into list of Bools (aka [Module])
-  -- flip the list of bools (because leftToRight will always only concat from the LHS)
-  -- parse through list of bools and if False then leftToRight
-  let modules = reverse (concat symbols)
-
-  let barcode_image_black = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB (0 :: Double) 0 0)
-  let barcode_image_white = makeImageR VU (imageHeight, moduleWidth) (\(i, j) -> PixelRGB (255 :: Double) 255 255)
-
-  let barcode_image = leftToRight barcode_image_black barcode_image_white
-
-  {-   case modules of
-       [] -> writeImage filePath barcode_image
-       (m:ms) -> if m then leftToRight barcode_image_black makeBarcode filePath imageHeight moduleWidth (BCString )
-
-  -}
-  -- keep track of which index in 'modules' the 'j'th pixel falls into
-  -- i.e., j = 100 where moduleWidth = 50, & length 'modules' = 2
   let mods = concat symbols
+  let imageLength = length mods * moduleWidth
 
   let barcode_img =
         makeImageR
           VU
-          (imageHeight, moduleWidth)
+          (imageHeight, imageLength)
           ( \(i, j) ->
-              ( if (j > moduleWidth) && (mods !! (moduleWidth `div` fromIntegral j))
+              ( if mods !! (fromIntegral j `div` moduleWidth)
                   then PixelRGB (0 :: Double) 0 0
                   else PixelRGB (255 :: Double) 255 255
               )
           )
 
-  -----------------------------------------------------------------------------------
-  -- another way to do it: (j / moduleWidth = the index it is at in [modules])
-
-  -- cases:
-  -- j <= moduleWidth
-  -- then we're at the first module (index 0) in [Modules] so print black
-  -- j > moduleWidth
-  -- if modules !! (moduleWidth/j) then r,g,b = 0 else r,g,b = 255
-  -----------------------------------------------------------------------------------
-
-  -- symbols = [symbol] = [[module]] = [[T,F,F,T], []]
-  -- i is always the same color as j
-  --
-  -- how do you connect the pixel
   writeImage filePath barcode_img
-
--- pure ()
-
--- undefined
 
 --------------------------------------------------------------------------------
 -- 4. Scanning Barcodes
@@ -165,6 +124,8 @@ isBlack pixel =
 
 getModuleWidth :: [Bool] -> Int
 getModuleWidth bools =
+  -- go until you hit the first white module then divide in half to find the width of a module
+  -- since each barcode starts with 1 1 0 1 (black black white black)
   undefined
 
 takeEvery :: Int -> [a] -> [a]
