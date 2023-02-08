@@ -110,37 +110,77 @@ makeBarcode filePath imageHeight moduleWidth (BCString symbols) = do
 --------------------------------------------------------------------------------
 -- 4. Scanning Barcodes
 
+-- helper from a Stack post:
+groupBy :: Int -> [a] -> [[a]]
+groupBy _ [] = []
+groupBy n l
+  | n > 0 = take n l : groupBy n (drop n l)
+  | otherwise = error "Negative or zero n"
+
 scanBarcode :: FilePath -> IO BCString
-scanBarcode filePath =
-  undefined
+scanBarcode filePath = do
+  let img = Image.readImageRGB VU filePath
+  return imageToBCString img
+
+-- takeEvery moduleWidth [pixels] --> return a list of pixels from each module
+-- check if each pixel isBlack
+-- create a [Bool]
+-- use a groupby function to group the [Bools] by 11 so that we have [[Bool]]
+-- get list of bools and init twice to remove last two
+-- then group the list of bools by 11
+
+--
+-- undefined
 
 imageToBCString :: (MArray arr cs e, ToY cs e) => Image arr cs e -> BCString
-imageToBCString img =
-  undefined
+imageToBCString img = do
+  -- extract the top row of pixels from image
+  let pixelList = head (Image.toLists img)
+  -- list of bools to see if each pixel is black
+  let boolList = map isBlack pixelList
 
-isBlack :: (ToY cs e) => Pixel cs e -> Bool
-isBlack pixel =
-  undefined
+  -- flip the bool list to find the width of modules in it
+  let flippedBoolList = reverse boolList
+  let modWidth = getModuleWidth flippedBoolList
 
-getModuleWidth :: [Bool] -> Int
-getModuleWidth bools =
-  -- go until you hit the first white module then divide in half to find the width of a module
-  -- since each barcode starts with 1 1 0 1 (black black white black)
-  undefined
+  -- extract a pixel from each module
+  let pixFromEachMod = takeEvery modWidth pixelList
 
-takeEvery :: Int -> [a] -> [a]
-takeEvery n xs =
-  undefined
+  -- check if each pixel isBlack & create [Bool]
+  -- remove the last 2 pixels because they're associated with the last '11' bits
+  let pixelBools = init (init (map isBlack pixFromEachMod))
+
+  -- group the pixelBools by 11 so that we have [[Bool]]
+  let symbols = groupBy 11 pixelBools
+
+  -- return the BCString
+  BCString symbols
 
 --------------------------------------------------------------------------------
 -- 5. Scanning Designed Barcodes
 
+--------------------------------------------------------------------------------
+-- Main
+
+isBlack :: (ToY cs e) => Pixel cs e -> Bool
+isBlack pixel =
+  let PixelY lum = toPixelY pixel
+   in -- so checking if pixel is black with some noise
+      lum <= 5.0
+
+getModuleWidth :: [Bool] -> Int
+getModuleWidth bools =
+  let endCode = takeWhile (== False) bools
+   in length endCode `div` 2
+
+takeEvery :: Int -> [a] -> [a]
+takeEvery n xs =
+  let filteredTuples = filter (\(x, _) -> x `mod` n == 0) (zip [1 :: Int ..] xs)
+   in map snd filteredTuples
+
 scanDesignedBarcode :: FilePath -> IO BCString
 scanDesignedBarcode filePath =
   undefined
-
---------------------------------------------------------------------------------
--- Main
 
 runEncoder ::
   (TheCodes -> String -> Either Error BC) ->
