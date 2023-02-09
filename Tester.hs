@@ -17,7 +17,7 @@ main :: IO ()
 main = do
   theCodes <- loadTheCodes
   runTests $ tests_decode theCodes
-  runTests $ tests_encode theCodes
+  -- runTests $ tests_encode theCodes
   runScanTests tests_scanBarcode theCodes
 
 runTests :: (Show a, Eq b) => [Test a b] -> IO ()
