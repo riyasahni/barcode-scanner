@@ -380,13 +380,28 @@ run f a = do
 bcToBCString :: TheCodes -> BC -> BCString
 bcToBCString theCodes (start, data_, checksum, stop) =
   let symbolIds = [start] ++ data_ ++ [checksum, stop]
-   in BCString $ map (\i -> (idsToSymbols theCodes) ! i) symbolIds
+   in --   in BCString $ map (\i -> (idsToSymbols theCodes) ! i) symbolIds
+
+      BCString $
+        map
+          ( \i -> case Map.lookup i (idsToSymbols theCodes) of
+              Just s -> s
+              Nothing -> error ("not in map" ++ show i)
+          )
+          symbolIds
 
 bcStringToBC :: TheCodes -> BCString -> BC
 bcStringToBC theCodes (BCString symbols) =
   (start, data_, checksum, stop)
   where
-    list = map (\symbol -> (symbolsToIds theCodes) ! symbol) symbols
+    -- list = map (\symbol -> (symbolsToIds theCodes) ! symbol) symbols
+    list =
+      map
+        ( \symbol -> case Map.lookup symbol (symbolsToIds theCodes) of
+            Just l -> l
+            Nothing -> error ("not in map " ++ show symbol)
+        )
+        symbols
     start = head list
     stop = head $ reverse list
     checksum = head $ tail $ reverse list
