@@ -1,0 +1,76 @@
+== Beginning of PA5 test report for sahnir ==
+
+== Style Report ==
+
+Type possibly missing for bToC in HipBarcodes.hs
+Type possibly missing for bToC in HipBarcodes.hs
+Type possibly missing for cToB in HipBarcodes.hs
+
+== End of Style Report ==
+
+
+== Testing Decoding and Non-Optimal Encoding ==
+
+Resolving dependencies...
+Build profile: -w ghc-9.2.5 -O1
+In order, the following will be built (use -v for more details):
+ - hip-barcodes-0.1.0.0 (exe:tests) (first run)
+Configuring executable 'tests' for hip-barcodes-0.1.0.0..
+Preprocessing executable 'tests' for hip-barcodes-0.1.0.0..
+Building executable 'tests' for hip-barcodes-0.1.0.0..
+[1 of 3] Compiling Code128          ( Code128.hs, /var/tmp/grader/cs223-wi23-pa-5-hip-barcodes-riyasahni/dist-newstyle/build/x86_64-linux/ghc-9.2.5/hip-barcodes-0.1.0.0/x/tests/build/tests/tests-tmp/Code128.o )
+[2 of 3] Compiling HipBarcodes      ( HipBarcodes.hs, /var/tmp/grader/cs223-wi23-pa-5-hip-barcodes-riyasahni/dist-newstyle/build/x86_64-linux/ghc-9.2.5/hip-barcodes-0.1.0.0/x/tests/build/tests/tests-tmp/HipBarcodes.o )
+[3 of 3] Compiling Tester           ( Tester.hs, /var/tmp/grader/cs223-wi23-pa-5-hip-barcodes-riyasahni/dist-newstyle/build/x86_64-linux/ghc-9.2.5/hip-barcodes-0.1.0.0/x/tests/build/tests/tests-tmp/Tester.o )
+Linking /var/tmp/grader/cs223-wi23-pa-5-hip-barcodes-riyasahni/dist-newstyle/build/x86_64-linux/ghc-9.2.5/hip-barcodes-0.1.0.0/x/tests/build/tests/tests ...
+
+[32mPASS decode theCodes (104,[40,65,83,75,69,76,76,1],1,106)[0m
+[32mPASS decode theCodes (104,[19,17,20,17,21,25,18,22,21,19],88,...[0m
+[32mPASS decode theCodes (104,[19,17,20,17,21,25,18,22,21,19],20,...[0m
+[32mPASS decode theCodes (105,[31,41,59,26,53],43,106)[0m
+[32mPASS decode theCodes (105,[31,41,59,26,53],42,106)[0m
+[32mPASS decode theCodes (0,[],0,0)[0m
+[32mPASS decode theCodes (105,[12],14,106)[0m
+[32mPASS decode theCodes (105,[12,34],82,106)[0m
+
+[32mPASS encode theCodes "Haskell!"[0m
+[32mPASS encode theCodes "CMSC 22300? HOT Programming in Haskell!...[0m
+[32mPASS encode theCodes "Separation of \9962 and \127963"[0m
+[32mPASS encode theCodes "3141592653"[0m
+[32mPASS encode theCodes "12"[0m
+[32mPASS encode theCodes "1234"[0m
+[32mPASS scanBarcode "images/barcode-0.png"[0m
+[32mPASS scanBarcode "images/barcode-1.png"[0m
+[32mPASS scanBarcode "images/barcode-2.png"[0m
+[32mPASS scanBarcode "images/barcode-3.png"[0m
+[32mPASS scanBarcode "images/barcode-4.png"[0m
+
+== Testing Barcode Writing ==
+
+
+Test failed
+
+Test failed
+
+Test failed
+
+== Testing Optimal Encoding ==
+
+Build profile: -w ghc-9.2.5 -O1
+In order, the following will be built (use -v for more details):
+ - hip-barcodes-0.1.0.0 (exe:tests) (file Tester.hs changed)
+Preprocessing executable 'tests' for hip-barcodes-0.1.0.0..
+Building executable 'tests' for hip-barcodes-0.1.0.0..
+[3 of 3] Compiling Tester           ( Tester.hs, /var/tmp/grader/cs223-wi23-pa-5-hip-barcodes-riyasahni/dist-newstyle/build/x86_64-linux/ghc-9.2.5/hip-barcodes-0.1.0.0/x/tests/build/tests/tests-tmp/Tester.o )
+Linking /var/tmp/grader/cs223-wi23-pa-5-hip-barcodes-riyasahni/dist-newstyle/build/x86_64-linux/ghc-9.2.5/hip-barcodes-0.1.0.0/x/tests/build/tests/tests ...
+
+[31mFAIL encode theCodes "1"[0m
+[31mFAIL encode theCodes "123"[0m
+[31mFAIL encode theCodes "12345"[0m
+[31mFAIL encode theCodes "1234x"[0m
+[31mFAIL encode theCodes "12345x"[0m
+[31mFAIL encode theCodes "x1234"[0m
+[31mFAIL encode theCodes "x12345"[0m
+[31mFAIL encode theCodes "098x1234567y23"[0m
+[31mFAIL encode theCodes "x123456y123456z"[0m
+
+== End of PA5 test report ==
